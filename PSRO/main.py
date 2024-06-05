@@ -40,9 +40,9 @@ if __name__ == '__main__':
 
     parser.add_argument("--algo", type=str, default='ppo', help='algorithm to adjust (default : ppo)')
     parser.add_argument("--process_num", type=int, default=mp.cpu_count(), help="the number of population")
-    parser.add_argument("--state_dim", type=int, default=12, help="state_dim")
-    parser.add_argument("--action_dim", type=int, default=6, help="action_dim")
-    parser.add_argument("--env", type=int, default=slimevolleygym.SlimeVolleyEnv(), help="environment")
+    parser.add_argument("--state_dim", type=int, default=10, help="state_dim")
+    parser.add_argument("--action_dim", type=int, default=3, help="action_dim")
+    parser.add_argument("--env", type=int, default=gym.make('ma_gym:PongDuel-v0'), help="environment")
 
     parser.add_argument("--max_step_per_episode", type=int, default=3000, help="max_step_per_episode")
     parser.add_argument("--mini_batch_num", type=int, default=10, help="split batch into 10 part")

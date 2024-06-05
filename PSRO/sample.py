@@ -77,8 +77,10 @@ class SampleAgent:
             action_i_ = self.action_table[action_i]
             action_j_ = self.action_table[action_j]
             # next_state_i_, reward_i, done, info = self.env.step(action_i_)
-            next_state_i_, reward_i, done, info = self.env.step(action_i_, action_j_)
-            next_state_j_ = info["otherObs"]
+            next_state_, reward_i, done, info = self.env.step([action_i_, action_j_])
+            next_state_i_ = next_state_[0]
+            next_state_j_ = next_state_[1]
+            # next_state_j_ = info["otherObs"]
             dw = done
             if t == self.traj_length - 1 and done == 0:
                 dw = 1 - dw
