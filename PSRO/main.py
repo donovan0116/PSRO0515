@@ -136,7 +136,3 @@ if __name__ == '__main__':
         if flag == args.max_actor_training_num - 1:
             print("training finished")
             break
-        # meta_game
-        # - 计算sample_proportion
-        # evaluation
-        # - 评估actor_training什么时候该存到actor_pop中

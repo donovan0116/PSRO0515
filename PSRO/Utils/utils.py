@@ -45,6 +45,24 @@ def convert_to_tensor(*value):
     return [torch.tensor(x).float().to(device) for x in value[1:]]
 
 
+def count_frequencies(lst):
+    # 初始化一个包含6个元素的列表，用于存储0到5的频率
+    frequencies = [0, 0, 0, 0, 0, 0]
+
+    # 获取列表的总长度
+    total_count = len(lst)
+
+    # 遍历输入的列表，统计每个元素的频次
+    for element in lst:
+        if element in [0, 1, 2, 3, 4, 5]:
+            frequencies[element] += 1
+
+    # 计算每个元素的频率，并保留三位小数
+    frequencies = [round(count / total_count, 3) for count in frequencies]
+
+    return frequencies
+
+
 class ReplayBuffer():
     def __init__(self, action_prob_exist, max_size, state_dim, num_action):
         self.max_size = max_size

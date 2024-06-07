@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch.distributions import Categorical
 
-from Utils.utils import make_transition, RunningMeanStd
+from Utils.utils import make_transition, RunningMeanStd, count_frequencies
 
 '''
 思路：构建sample的agent，采样完成后将data传出去，再在train中创建agent进行训练。
@@ -52,6 +52,7 @@ class SampleAgent:
         state_j_ = state_i_
         state_i = np.clip((state_i_ - state_rms_i.mean) / (state_rms_i.var ** 0.5 + 1e-8), -5, 5)
         state_j = np.clip((state_j_ - state_rms_j.mean) / (state_rms_j.var ** 0.5 + 1e-8), -5, 5)
+        action_lst = []
         for t in range(self.traj_length):
             state_i_lst.append(state_i_)
             state_j_lst.append(state_j_)
@@ -116,11 +117,15 @@ class SampleAgent:
                 state_i = np.clip((state_i_ - state_rms_i.mean) / (state_rms_i.var ** 0.5 + 1e-8), -5, 5)
                 state_j = np.clip((state_j_ - state_rms_j.mean) / (state_rms_j.var ** 0.5 + 1e-8), -5, 5)
                 score_lst.append(score)
+                action_lst.append(action_i)
                 score = 0
             else:
                 state_i = next_state_i
                 state_j = next_state_j
                 state_i_ = next_state_i_
                 state_j_ = next_state_j_
+
+        result = count_frequencies(action_lst)
+        print(f"the frequencies of action is: {result}")
 
         return agent_i.data, agent_j.data
