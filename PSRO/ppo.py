@@ -11,12 +11,13 @@ import torch.optim as optim
 
 
 class PPO(nn.Module):
-    def __init__(self, device, state_dim, action_dim, args, actor, critic):
+    def __init__(self, device, state_dim, action_dim, args, actor, critic, data):
         super(PPO, self).__init__()
         self.args = args
 
-        self.data = ReplayBuffer(action_prob_exist=True, max_size=self.args.traj_length, state_dim=state_dim,
-                                 num_action=1)
+        # self.data = ReplayBuffer(action_prob_exist=True, max_size=self.args.traj_length, state_dim=state_dim,
+        #                          num_action=1)
+        self.data = data
         self.actor = actor
         self.critic = critic
 

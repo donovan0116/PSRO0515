@@ -10,6 +10,7 @@ import numpy as np
 import multiprocessing as mp
 
 from Networks.network import Actor, Critic
+from PSRO.ppo import PPO
 from sample import SampleAgent
 from train import TrainAgent
 from evaluationAgent import EvaluationAgent
@@ -114,11 +115,14 @@ if __name__ == '__main__':
             print("sampling...")
             sampleAgent = SampleAgent(args, actor_pop, critic_pop, actor_training, critic_training, sample_proportion,
                                       agent_args, device)
-            buffer_i, buffer_j = sampleAgent.sample(state_i_lst, state_rms_i, state_j_lst, state_rms_j)
+            buffer_i = sampleAgent.sample(state_i_lst, state_rms_i, state_j_lst, state_rms_j)
             # training
             print("training...")
-            trainAgent = TrainAgent(args, actor_training, critic_training, buffer_i, agent_args, device)
-            trainAgent.train(n_epi)
+
+            agent = PPO(device, args.state_dim, args.action_dim, agent_args, actor_training, critic_training, buffer_i)
+            agent.train_net(n_epi)
+            # trainAgent = TrainAgent(args, actor_training, critic_training, buffer_i, agent_args, device)
+            # trainAgent.train(n_epi)
             state_rms_i.update(np.vstack(state_i_lst))
             state_rms_j.update(np.vstack(state_j_lst))
             evaluationAgent = EvaluationAgent(args, actor_training, actor_pop, critic_training, critic_pop,

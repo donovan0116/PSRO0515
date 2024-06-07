@@ -25,17 +25,15 @@ class EvaluationAgent:
 
         self.action_table = [[0, 0, 0], [1, 0, 0], [1, 0, 1], [0, 0, 1], [0, 1, 1], [0, 1, 0]]
 
+    def get_action(self, x):
+        out = self.actor_training(x)
+        return out
+
     def evaluation(self, state_rms_i, state_rms_j):
         # 通过sample_proportion选择actor_pop
         sample_pro = torch.from_numpy(self.sample_proportion).to(self.device).float().detach()
         sample_num = Categorical(sample_pro).sample().detach().numpy().tolist()
         win_count = 0
-
-        agent_i = PPO(self.device, self.state_dim, self.action_dim, self.agent_args,
-                      self.actor_training, self.critic_training)
-
-        agent_j = PPO(self.device, self.state_dim, self.action_dim, self.agent_args,
-                      self.actor_pop[sample_num], self.critic_pop[sample_num])
 
         for _ in range(self.eval_count):
             state_i_ = self.env.reset()
@@ -45,10 +43,8 @@ class EvaluationAgent:
             state_j = np.clip((state_j_ - state_rms_j.mean) / (state_rms_j.var ** 0.5 + 1e-8), -5, 5)
             tot_reward_i, tot_reward_j = 0, 0
             for step in range(self.traj_length):
-                out_i = agent_i.get_action(
-                    torch.from_numpy(np.array(state_i)).float().to(self.device).unsqueeze(dim=0))
-                out_j = agent_j.get_action(
-                    torch.from_numpy(np.array(state_j)).float().to(self.device).unsqueeze(dim=0))
+                out_i = self.get_action(torch.from_numpy(np.array(state_i)).float().to(self.device).unsqueeze(dim=0))
+                out_j = self.get_action(torch.from_numpy(np.array(state_j)).float().to(self.device).unsqueeze(dim=0))
 
                 dist_i = Categorical(out_i)
                 dist_j = Categorical(out_j)

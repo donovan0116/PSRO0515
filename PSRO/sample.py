@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch.distributions import Categorical
 
-from Utils.utils import make_transition, RunningMeanStd, count_frequencies
+from Utils.utils import make_transition, RunningMeanStd, count_frequencies, ReplayBuffer
 
 '''
 思路：构建sample的agent，采样完成后将data传出去，再在train中创建agent进行训练。
@@ -20,6 +20,8 @@ class SampleAgent:
         self.device = device
 
         self.agent_args = agent_args
+        self.data = ReplayBuffer(action_prob_exist=True, max_size=self.traj_length, state_dim=args.state_dim,
+                                 num_action=1)
 
         self.state_dim = args.state_dim
         self.action_dim = args.action_dim
@@ -34,17 +36,21 @@ class SampleAgent:
 
         self.action_table = [[0, 0, 0], [1, 0, 0], [1, 0, 1], [0, 0, 1], [0, 1, 1], [0, 1, 0]]
 
+    def get_action(self, x):
+        out = self.actor_training(x)
+        return out
+
     def sample(self, state_i_lst, state_rms_i, state_j_lst, state_rms_j):
         # 通过sample_proportion选择actor_pop
         sample_pro = torch.from_numpy(self.sample_proportion).to(self.device).float().detach()
         sample_num = Categorical(sample_pro).sample().detach().numpy().tolist()
         score_lst = []
 
-        agent_i = PPO(self.device, self.state_dim, self.action_dim, self.agent_args,
-                      self.actor_training, self.critic_training)
-
-        agent_j = PPO(self.device, self.state_dim, self.action_dim, self.agent_args,
-                      self.actor_pop[sample_num], self.critic_pop[sample_num])
+        # agent_i = PPO(self.device, self.state_dim, self.action_dim, self.agent_args,
+        #               self.actor_training, self.critic_training)
+        #
+        # agent_j = PPO(self.device, self.state_dim, self.action_dim, self.agent_args,
+        #               self.actor_pop[sample_num], self.critic_pop[sample_num])
 
         score = 0
         state_i_ = self.env.reset()
@@ -57,10 +63,8 @@ class SampleAgent:
             state_i_lst.append(state_i_)
             state_j_lst.append(state_j_)
 
-            out_i = agent_i.get_action(
-                torch.from_numpy(np.array(state_i)).float().to(self.device).unsqueeze(dim=0))
-            out_j = agent_j.get_action(
-                torch.from_numpy(np.array(state_j)).float().to(self.device).unsqueeze(dim=0))
+            out_i = self.get_action(torch.from_numpy(np.array(state_i)).float().to(self.device).unsqueeze(dim=0))
+            out_j = self.get_action(torch.from_numpy(np.array(state_j)).float().to(self.device).unsqueeze(dim=0))
 
             dist_i = Categorical(out_i)
             dist_j = Categorical(out_j)
@@ -94,7 +98,7 @@ class SampleAgent:
                                            np.array([dw]),
                                            log_prob_i.detach().cpu().numpy()
                                            )
-            agent_i.put_data(transition_i)
+            self.data.put_data(transition_i)
             score += reward_i
             if reward_i == 1.01:
                 reward_j = -0.99
@@ -102,14 +106,14 @@ class SampleAgent:
                 reward_j = 1.01
             else:
                 reward_j = 0.01
-            transition_j = make_transition(state_j,
-                                           action_j,
-                                           np.array([reward_j * self.reward_scaling]),
-                                           next_state_j,
-                                           np.array([done]),
-                                           log_prob_j.detach().cpu().numpy()
-                                           )
-            agent_j.put_data(transition_j)
+            # transition_j = make_transition(state_j,
+            #                                action_j,
+            #                                np.array([reward_j * self.reward_scaling]),
+            #                                next_state_j,
+            #                                np.array([done]),
+            #                                log_prob_j.detach().cpu().numpy()
+            #                                )
+            # agent_j.put_data(transition_j)
             if done:
                 state_i_ = self.env.reset()
                 # state_i_ = state_i_[0]
@@ -128,4 +132,4 @@ class SampleAgent:
         result = count_frequencies(action_lst)
         print(f"the frequencies of action is: {result}")
 
-        return agent_i.data, agent_j.data
+        return self.data
