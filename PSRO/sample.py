@@ -40,6 +40,10 @@ class SampleAgent:
         out = self.actor_training(x)
         return out
 
+    def get_action_pop(self, x, sample_num):
+        out = self.actor_pop[sample_num](x)
+        return out
+
     def sample(self, state_i_lst, state_rms_i, state_j_lst, state_rms_j):
         # 通过sample_proportion选择actor_pop
         sample_pro = torch.from_numpy(self.sample_proportion).to(self.device).float().detach()
@@ -64,7 +68,8 @@ class SampleAgent:
             state_j_lst.append(state_j_)
 
             out_i = self.get_action(torch.from_numpy(np.array(state_i)).float().to(self.device).unsqueeze(dim=0))
-            out_j = self.get_action(torch.from_numpy(np.array(state_j)).float().to(self.device).unsqueeze(dim=0))
+            out_j = self.get_action_pop(torch.from_numpy(np.array(state_j)).float().to(self.device).unsqueeze(dim=0),
+                                        sample_num)
 
             dist_i = Categorical(out_i)
             dist_j = Categorical(out_j)
@@ -100,12 +105,12 @@ class SampleAgent:
                                            )
             self.data.put_data(transition_i)
             score += reward_i
-            if reward_i == 1.01:
-                reward_j = -0.99
-            elif reward_i == -0.99:
-                reward_j = 1.01
+            if reward_i == 0.101:
+                reward_j = -0.099
+            elif reward_i == -0.099:
+                reward_j = 0.101
             else:
-                reward_j = 0.01
+                reward_j = 0.001
             # transition_j = make_transition(state_j,
             #                                action_j,
             #                                np.array([reward_j * self.reward_scaling]),
@@ -131,5 +136,6 @@ class SampleAgent:
 
         result = count_frequencies(action_lst)
         print(f"the frequencies of action is: {result}")
+        # print(f"the frequencies of action is: {out_i}")
 
         return self.data

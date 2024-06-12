@@ -9,6 +9,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+import torch.nn.functional as F
+
 
 class PPO(nn.Module):
     def __init__(self, device, state_dim, action_dim, args, actor, critic, data):
@@ -75,7 +77,11 @@ class PPO(nn.Module):
                 value = self.v(state).float()
                 curr_dist = Categorical(curr_out)
                 entropy = curr_dist.entropy() * self.args.entropy_coef
-                curr_log_prob = curr_dist.log_prob(action).sum(1, keepdim=True)
+                # 对连续动作执行这个
+                # curr_log_prob = curr_dist.log_prob(action).sum(1, keepdim=True)
+                action = action.long().squeeze(-1)
+                curr_log_prob = curr_dist.log_prob(action)
+                curr_log_prob = curr_log_prob.unsqueeze(-1)
 
                 # policy clipping
                 ratio = torch.exp(curr_log_prob - old_log_prob.detach())
@@ -88,6 +94,7 @@ class PPO(nn.Module):
                 value_loss = (value - return_.detach().float()).pow(2)
                 value_loss_clipped = (old_value_clipped - return_.detach().float()).pow(2)
                 critic_loss = 0.5 * self.args.critic_coef * torch.max(value_loss, value_loss_clipped).mean()
+                # critic_loss = F.mse_loss(return_, value)
 
                 # for p in self.actor.named_parameters():
                 #     print(len(p))  # 打印长度

@@ -29,6 +29,10 @@ class EvaluationAgent:
         out = self.actor_training(x)
         return out
 
+    def get_action_pop(self, x, sample_num):
+        out = self.actor_pop[sample_num](x)
+        return out
+
     def evaluation(self, state_rms_i, state_rms_j):
         # 通过sample_proportion选择actor_pop
         sample_pro = torch.from_numpy(self.sample_proportion).to(self.device).float().detach()
@@ -44,7 +48,8 @@ class EvaluationAgent:
             tot_reward_i, tot_reward_j = 0, 0
             for step in range(self.traj_length):
                 out_i = self.get_action(torch.from_numpy(np.array(state_i)).float().to(self.device).unsqueeze(dim=0))
-                out_j = self.get_action(torch.from_numpy(np.array(state_j)).float().to(self.device).unsqueeze(dim=0))
+                out_j = self.get_action_pop(torch.from_numpy(np.array(state_j)).float().to(self.device).unsqueeze(dim=0)
+                                            , sample_num)
 
                 dist_i = Categorical(out_i)
                 dist_j = Categorical(out_j)
@@ -67,12 +72,12 @@ class EvaluationAgent:
                 next_state_j_ = info["otherObs"]
                 next_state_i = np.clip((next_state_i_ - state_rms_i.mean) / (state_rms_i.var ** 0.5 + 1e-8), -5, 5)
                 next_state_j = np.clip((next_state_j_ - state_rms_j.mean) / (state_rms_j.var ** 0.5 + 1e-8), -5, 5)
-                if reward_i == 1.01:
-                    reward_j = -0.99
-                elif reward_i == -0.99:
-                    reward_j = 1.01
+                if reward_i == 0.101:
+                    reward_j = -0.099
+                elif reward_i == -0.099:
+                    reward_j = 0.101
                 else:
-                    reward_j = 0.01
+                    reward_j = 0.001
                 tot_reward_j += reward_j
                 if done or step == self.traj_length - 1:
                     # 如果i胜利，则存入win_count + 1
