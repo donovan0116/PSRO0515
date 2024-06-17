@@ -5,10 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f7293e4a-e27e-4607-bbe9-d5a15e56f4a7" name="Changes" comment="20240607">
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PSRO/evaluationAgent.py" beforeDir="false" afterPath="$PROJECT_DIR$/PSRO/evaluationAgent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PSRO/sample.py" beforeDir="false" afterPath="$PROJECT_DIR$/PSRO/sample.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PSRO/config.ini" beforeDir="false" afterPath="$PROJECT_DIR$/PSRO/config.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PSRO/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/PSRO/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ma-gym" beforeDir="false" afterPath="$PROJECT_DIR$/ma-gym" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ma-gym/ma_gym/envs/pong_duel/pong_duel.py" beforeDir="false" afterPath="$PROJECT_DIR$/ma-gym/ma_gym/envs/pong_duel/pong_duel.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/slimevolleygym" beforeDir="false" afterPath="$PROJECT_DIR$/slimevolleygym" afterDir="false" />
@@ -41,7 +39,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Python.main.executor": "Debug",
+    "Python.main.executor": "Run",
     "Python.ppo.executor": "Debug",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",

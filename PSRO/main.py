@@ -50,7 +50,7 @@ if __name__ == '__main__':
 
     parser.add_argument("--num_rollout", type=int, default=10, help="PPO parameter")
     parser.add_argument("--eval_count", type=int, default=100, help="evaluation count")
-    parser.add_argument("--sample_proportion_mode", type=int, default=1,
+    parser.add_argument("--sample_proportion_mode", type=int, default=3,
                         help="sample_proportion mode 1: SP 2: Uniform Distribution 3: nash")
 
     parser.add_argument("--lr_meta", type=float, default=5e-3, help="Learning rate of sample proportion")
@@ -87,6 +87,7 @@ if __name__ == '__main__':
                          )]
 
     sample_proportion = np.array([1.])
+    winning_rate_table = np.zeros((1, 1))
 
     while True:
         actor_training = Actor(agent_args.layer_num,
@@ -108,6 +109,7 @@ if __name__ == '__main__':
         state_i_lst, state_j_lst = [], []
         state_rms_i = RunningMeanStd(args.state_dim)
         state_rms_j = RunningMeanStd(args.state_dim)
+
         for n_epi in range(args.max_actor_training_num):
             print("#######################################################")
             print("generation: " + str(len(actor_pop)) + "   training time: " + str(n_epi))
@@ -135,7 +137,10 @@ if __name__ == '__main__':
             if winning_rate > args.max_winning_rate:
                 actor_pop.append(actor_training)
                 critic_pop.append(critic_training)
-                sample_proportion = meta_game(args, actor_pop, critic_pop, sample_proportion)
+                sample_proportion, winning_rate_table = meta_game(args, actor_pop, critic_pop, sample_proportion,
+                                                                  agent_args, device, state_rms_i, state_rms_j,
+                                                                  winning_rate_table)
+                print("new sample prop: " + str(sample_proportion))
                 break
         if flag == args.max_actor_training_num - 1:
             print("training finished")
