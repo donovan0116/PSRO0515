@@ -72,12 +72,12 @@ class EvaluationAgent:
                 next_state_j_ = info["otherObs"]
                 next_state_i = np.clip((next_state_i_ - state_rms_i.mean) / (state_rms_i.var ** 0.5 + 1e-8), -5, 5)
                 next_state_j = np.clip((next_state_j_ - state_rms_j.mean) / (state_rms_j.var ** 0.5 + 1e-8), -5, 5)
-                if reward_i == 0.101:
-                    reward_j = -0.099
-                elif reward_i == -0.099:
-                    reward_j = 0.101
+                if reward_i == 1.01:
+                    reward_j = -0.99
+                elif reward_i == -0.99:
+                    reward_j = 1.01
                 else:
-                    reward_j = 0.001
+                    reward_j = 0.01
                 tot_reward_j += reward_j
                 if done or step == self.traj_length - 1:
                     # 如果i胜利，则存入win_count + 1
@@ -89,5 +89,50 @@ class EvaluationAgent:
                     state_j = next_state_j
                     state_i_ = next_state_i_
                     state_j_ = next_state_j_
+
+        return win_count / self.eval_count
+
+    def evaluation_sota(self, state_rms_i, state_rms_j, sample_proportion, actor_pop):
+        # 通过sample_proportion选择actor_pop
+        sample_pro = torch.from_numpy(sample_proportion).to(self.device).float().detach()
+        sample_num = Categorical(sample_pro).sample().detach().numpy().tolist()
+        win_count = 0
+        self.actor_pop = actor_pop
+
+        for _ in range(self.eval_count):
+            state_i_ = self.env.reset()
+            # state_i_ = state_i_[0]
+            state_i = np.clip((state_i_ - state_rms_i.mean) / (state_rms_i.var ** 0.5 + 1e-8), -5, 5)
+            tot_reward_i, tot_reward_j = 0, 0
+            for step in range(self.traj_length):
+                out_i = self.get_action_pop(torch.from_numpy(np.array(state_i)).float().to(self.device).unsqueeze(dim=0)
+                                            , sample_num)
+
+                dist_i = Categorical(out_i)
+
+                action_i = dist_i.sample()
+
+                action_i = action_i.detach().numpy().tolist()
+                action_i = action_i[0]
+
+                action_i_ = self.action_table[action_i]
+
+                next_state_i_, reward_i, done, info = self.env.step(action_i_)
+                tot_reward_i += reward_i
+                next_state_i = np.clip((next_state_i_ - state_rms_i.mean) / (state_rms_i.var ** 0.5 + 1e-8), -5, 5)
+                if reward_i == 1.01:
+                    reward_j = -0.99
+                elif reward_i == -0.99:
+                    reward_j = 1.01
+                else:
+                    reward_j = 0.01
+                tot_reward_j += reward_j
+                if done or step == self.traj_length - 1:
+                    # 如果i胜利，则存入win_count + 1
+                    if tot_reward_i >= tot_reward_j:
+                        win_count += 1
+                    break
+                else:
+                    state_i = next_state_i
 
         return win_count / self.eval_count

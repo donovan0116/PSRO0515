@@ -141,6 +141,11 @@ if __name__ == '__main__':
                                                                   agent_args, device, state_rms_i, state_rms_j,
                                                                   winning_rate_table)
                 print("new sample prop: " + str(sample_proportion))
+                # 每隔10次，与sota对比评估一次
+                if len(actor_pop) % 10 == 0:
+                    winning_rate_sota = evaluationAgent.evaluation_sota(state_rms_i, state_rms_j, sample_proportion
+                                                                        , actor_pop)
+                    print("winning rate with sota: " + str(winning_rate_sota))
                 break
         if flag == args.max_actor_training_num - 1:
             print("training finished")
