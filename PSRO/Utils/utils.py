@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from torch.distributions import Categorical
+import time
 
 
 class Dict(dict):
@@ -55,13 +56,27 @@ def count_frequencies(lst):
 
     # 遍历输入的列表，统计每个元素的频次
     for element in lst:
-        if element in [0, 1, 2, 3, 4, 5]:
-            frequencies[element] += 1
+        if int(element[0]) in [0, 1, 2, 3, 4, 5]:
+            frequencies[int(element[0])] += 1
 
     # 计算每个元素的频率，并保留三位小数
     frequencies = [round(count / total_count, 3) for count in frequencies]
 
     return frequencies
+
+
+def timing_function(func):
+    """
+    A decorator that prints the execution time of the function it decorates.
+    """
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"Execution time of {func.__name__}: {execution_time:.3f}s")
+        return result
+    return wrapper
 
 
 class ReplayBuffer():

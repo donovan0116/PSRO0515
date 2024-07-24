@@ -93,7 +93,8 @@ class PPO(nn.Module):
                 old_value_clipped = old_value + (value - old_value).clamp(-self.args.max_clip, self.args.max_clip)
                 value_loss = (value - return_.detach().float()).pow(2)
                 value_loss_clipped = (old_value_clipped - return_.detach().float()).pow(2)
-                critic_loss = 0.5 * self.args.critic_coef * torch.max(value_loss, value_loss_clipped).mean()
+                # critic_loss = 0.5 * self.args.critic_coef * torch.max(value_loss, value_loss_clipped).mean()
+                critic_loss = 0.5 * self.args.critic_coef * value_loss.mean()
                 # critic_loss = F.mse_loss(return_, value)
 
                 # for p in self.actor.named_parameters():

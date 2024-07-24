@@ -1,4 +1,5 @@
 import numpy as np
+import redis
 import scipy
 
 from PSRO.evaluationAgent import EvaluationAgent
@@ -61,7 +62,10 @@ def meta_game(args, actor_pop, critic_pop, sample_proportion, agent_args, device
         for idx in range(len(actor_pop) - 1):
             evaluationAgent = EvaluationAgent(args, actor_pop[-1], [actor_pop[idx]], critic_pop[-1],
                                               [critic_pop[idx]], np.array([1.]), agent_args, device)
-            winning_rate = evaluationAgent.evaluation(state_rms_i, state_rms_j)
+            if args.distribute_eval:
+                winning_rate = evaluationAgent.dis_evaluation(state_rms_i, state_rms_j, args.eval_count)
+            else:
+                winning_rate = evaluationAgent.evaluation(state_rms_i, state_rms_j)
             winning_rate_list.append(winning_rate)
 
         n = winning_rate_table.shape[0]
